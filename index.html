@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saysal Loto Oyunu</title>
+    <style>
+        input { width: 40px; text-align: center; margin: 5px; }
+        button { margin-left: 10px; }
+        .disabled { background-color: #ddd; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Saysal Loto Oyunu</h1>
+    <p>Aşağıdaki inputlara tahminlerinizi giriniz:</p>
+    <div>
+        <input type="number" id="tahmin1" min="1" max="49">
+        <input type="number" id="tahmin2" min="1" max="49">
+        <input type="number" id="tahmin3" min="1" max="49">
+        <input type="number" id="tahmin4" min="1" max="49">
+        <input type="number" id="tahmin5" min="1" max="49">
+        <input type="number" id="tahmin6" min="1" max="49">
+        <button id="tahminGir">Tahmin Gir</button>
+    </div>
+    <button id="kurayiCek" class="disabled" disabled>Kurayı Çek</button>
+    <h2>Loto Sayıları</h2>
+    <div>
+        <input type="text" id="loto1" disabled>
+        <input type="text" id="loto2" disabled>
+        <input type="text" id="loto3" disabled>
+        <input type="text" id="loto4" disabled>
+        <input type="text" id="loto5" disabled>
+        <input type="text" id="loto6" disabled>
+    </div>
+    <h2>Bilinen Sayılar</h2>
+    <div id="bilinenSayilar"></div>
+    <div id="bilinenSayiAdedi"></div>
+
+    <script>
+        const tahminInputlari = Array.from(document.querySelectorAll('input[type="number"]'));
+        const tahminGirButonu = document.getElementById('tahminGir');
+        const kurayiCekButonu = document.getElementById('kurayiCek');
+        const lotoInputlari = [
+            document.getElementById('loto1'),
+            document.getElementById('loto2'),
+            document.getElementById('loto3'),
+            document.getElementById('loto4'),
+            document.getElementById('loto5'),
+            document.getElementById('loto6')
+        ];
+        const bilinenSayilarDiv = document.getElementById('bilinenSayilar');
+        const bilinenSayiAdediDiv = document.getElementById('bilinenSayiAdedi');
+
+        tahminInputlari.forEach(input => {
+            input.addEventListener('blur', ayniTahminKontrolu);
+        });
+
+        tahminGirButonu.addEventListener('click', tahminleriGir);
+        kurayiCekButonu.addEventListener('click', kurayiCek);
+
+        function ayniTahminKontrolu() {
+            const tahminler = tahminInputlari.map(input => input.value).filter(value => value !== '');
+            const tekrarlar = tahminler.filter((item, index) => tahminler.indexOf(item) !== index);
+
+            if (tekrarlar.length > 0) {
+                alert('Aynı tahmin bir kez girilebilir.');
+                this.value = '';
+                this.focus();
+            }
+        }
+
+        function tahminleriGir() {
+            const tahminler = tahminInputlari.map(input => parseInt(input.value)).filter(value => !isNaN(value));
+
+            if (tahminler.length < 6) {
+                alert('Lütfen 6 farklı tahmin giriniz.');
+                return;
+            }
+
+            for (const tahmin of tahminler) {
+                if (tahmin < 1 || tahmin > 49) {
+                    alert('1-49 sayıları arasında bir sayı girmelisiniz');
+                    return;
+                }
+            }
+
+            tahminGirButonu.disabled = true;
+            tahminGirButonu.classList.add('disabled');
+            kurayiCekButonu.disabled = false;
+            kurayiCekButonu.classList.remove('disabled');
+        }
+
+        function kurayiCek() {
+            const lotoSayilari = [];
+            while (lotoSayilari.length < 6) {
+                const rastgeleSayi = Math.floor(Math.random() * 49) + 1;
+                if (!lotoSayilari.includes(rastgeleSayi)) {
+                    lotoSayilari.push(rastgeleSayi);
+                }
+            }
+            lotoSayilari.sort((a, b) => a - b);
+
+            const tahminler = tahminInputlari.map(input => parseInt(input.value)).filter(value => !isNaN(value));
+            const bilinenSayilar = tahminler.filter(sayi => lotoSayilari.includes(sayi));
+
+            for (let i = 0; i < 6; i++) {
+                lotoInputlari[i].value = lotoSayilari[i];
+            }
+
+            bilinenSayilarDiv.textContent = 'Bilinen Sayılar: ' + bilinenSayilar.join(', ');
+            bilinenSayiAdediDiv.textContent = 'Kaç adet sayı bilindi: ' + bilinenSayilar.length;
+        }
+    </script>
+</body>
+</html>
